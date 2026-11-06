@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcaster | WebRTC Lab</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="broadcaster-page">
+
+<div class="ambient-background" aria-hidden="true">
+    <div class="ambient-orb orb-one"></div>
+    <div class="ambient-orb orb-two"></div>
+    <div class="ambient-orb orb-three"></div>
+    <div class="ambient-orb orb-four"></div>
+    <div class="glass-bubble bubble-one"></div>
+    <div class="glass-bubble bubble-two"></div>
+    <div class="glass-bubble bubble-three"></div>
+    <div class="ambient-glow"></div>
+</div>
+
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">📹</div>
+        <div>
+            <strong>WebRTC Lab</strong>
+            <small>Local Conference</small>
+        </div>
+    </div>
+
+    <nav class="nav-links">
+        <a href="/broadcaster.html" class="active">Broadcaster</a>
+        <a href="/viewer.html">Viewer</a>
+        <a href="#informasi">Informasi</a>
+    </nav>
+
+    <div class="server-status">
+        <span class="dot"></span> Server Online
+    </div>
+</header>
+
+<main class="page">
+
+    <section class="hero">
+        <span class="eyebrow">BROADCASTER MODE</span>
+        <h1>Share Your <span class="gradient-text">Moment.</span></h1>
+        <p>
+            Pilih sumber media, mulai siaran secara real-time,
+            dan bagikan token kepada viewer.
+        </p>
+    </section>
+
+    <div class="stack">
+
+        <!-- PILIH SUMBER MEDIA -->
+        <section class="glass-card">
+
+            <div class="card-heading">
+                <div class="icon-box">📂</div>
+                <div>
+                    <h2>Pilih Sumber Media</h2>
+                    <p>Pilih file dari perangkat atau gunakan kamera langsung.</p>
+                </div>
+            </div>
+
+            <div class="source-grid">
+
+                <button type="button" class="source-option" id="chooseFileBtn">
+                    <span class="source-icon">📁</span>
+                    <strong>Upload Media</strong>
+                    <small>Video, gambar, dan audio</small>
+                </button>
+
+                <button type="button" class="source-option" id="cameraSourceBtn">
+                    <span class="source-icon">📷</span>
+                    <strong>Gunakan Kamera</strong>
+                    <small>Webcam dan mikrofon</small>
+                </button>
+
+            </div>
+
+            <input
+                type="file"
+                id="mediaFileInput"
+                accept="video/*,image/*,audio/*"
+                hidden
+            >
+
+            <div id="selectedMediaBox" class="media-selected" hidden>
+                <span>📄</span>
+                <div>
+                    <strong id="selectedFileName">Nama file</strong>
+                    <small id="selectedFileType">Tipe media</small>
+                </div>
+                <button type="button" id="clearMediaBtn">✕</button>
+            </div>
+
+            <div id="mediaSourceStatus" class="status">
+                Belum ada sumber media dipilih.
+            </div>
+
+        </section>
+
+        <!-- ROOM TOKEN -->
+        <section class="glass-card">
+
+            <div class="card-heading">
+                <div class="icon-box">🔑</div>
+                <div>
+                    <h2>Room Token</h2>
+                    <p>Bagikan token ini kepada viewer untuk bergabung.</p>
+                </div>
+            </div>
+
+            <div class="token-box">
+                <div class="row-layout">
+                    <div class="token-value" id="token" style="flex:1">
+                        Menyiapkan token...
+                    </div>
+
+                    <button class="primary-btn" id="copyTokenBtn" type="button">
+                        ▢ Salin Token
+                    </button>
+                </div>
+
+                <p style="margin:12px 0 0;color:var(--muted);font-size:11px">
+                    Pastikan viewer memasukkan token yang sama.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- LIVE PREVIEW -->
+        <section class="glass-card">
+
+            <div class="card-heading">
+                <div class="icon-box">🎥</div>
+                <div>
+                    <h2>Live Room</h2>
+                    <p>Siaran kamu dan kamera viewer tampil berdampingan.</p>
+                </div>
+                <div class="spacer"></div>
+                <span class="status" id="cameraStatus">
+                    Menunggu sumber media
+                </span>
+            </div>
+
+            <div class="meet-grid" id="meetGrid">
+                <div class="meet-tile">
+                    <span class="video-badge" id="liveBadge">● PREVIEW</span>
+                    <video
+                        id="localVideo"
+                        autoplay
+                        playsinline
+                        muted
+                        controls
+                    ></video>
+                </div>
+
+                <!-- tile kamera viewer ditambahkan otomatis di sini -->
+                <div id="viewerVideos" class="viewer-contents"></div>
+            </div>
+
+            <p id="viewerVideosEmpty" class="status">
+                Belum ada viewer yang membagikan kamera.
+            </p>
+
+            <div class="broadcast-controls">
+
+                <button
+                    class="primary-btn"
+                    id="startBroadcastBtn"
+                    type="button"
+                    disabled
+                >
+                    ▶ Start Broadcasting
+                </button>
+
+                <button
+                    class="primary-btn"
+                    id="stopBroadcastBtn"
+                    type="button"
+                    disabled
+                >
+                    ■ Stop Broadcasting
+                </button>
+
+            </div>
+
+            <div class="broadcast-status">
+                <span class="status" id="broadcastStatus">
+                    Pilih sumber media terlebih dahulu.
+                </span>
+            </div>
+
+            <!-- AUTO SUBTITLE -->
+            <div class="subtitle-controls">
+
+                <button
+                    class="primary-btn"
+                    id="startCaptionBtn"
+                    type="button"
+                >
+                    🎙️ Aktifkan Auto Subtitle
+                </button>
+
+                <span class="status" id="speechStatus">
+                    Subtitle belum aktif
+                </span>
+
+            </div>
+
+        </section>
+
+                <!-- INFORMASI -->
+        <section class="info-card" id="informasi">
+            <div class="icon-box">ⓘ</div>
+            <div>
+                <strong>Informasi Siaran</strong><br>
+                Pilih media atau aktifkan kamera sebelum memulai
+                broadcasting. Bagikan token kepada viewer agar
+                dapat menerima siaran.
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="footer">
+        <span>────</span>
+        WebRTC Lab • Multimedia Technology
+        <span>────</span>
+    </footer>
+
+</main>
+
+<!-- Elemen audio untuk sumber file audio -->
+<audio id="audioSource" hidden></audio>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script type="module">
+    import { startBroadcast } from './main.js';
+    startBroadcast();
+</script>
+
+</body>
+</html>

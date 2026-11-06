@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viewer | WebRTC Lab</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="viewer-page">
+    <div class="ambient-background" aria-hidden="true">
+    <div class="ambient-orb orb-one"></div>
+    <div class="ambient-orb orb-two"></div>
+    <div class="ambient-orb orb-three"></div>
+    <div class="ambient-orb orb-four"></div>
+
+    <div class="glass-bubble bubble-one"></div>
+    <div class="glass-bubble bubble-two"></div>
+    <div class="glass-bubble bubble-three"></div>
+
+    <div class="ambient-glow"></div>
+</div>
+
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">📹</div>
+        <div>
+            <strong>WebRTC Lab</strong>
+            <small>Local Conference</small>
+        </div>
+    </div>
+
+    <nav class="nav-links">
+        <a href="/broadcaster.html">Broadcaster</a>
+        <a href="/viewer.html" class="active">Viewer</a>
+        <a href="#informasi">Informasi</a>
+    </nav>
+
+    <div class="server-status">
+        <span class="dot"></span> Server Online
+    </div>
+</header>
+
+<main class="page">
+    <section class="hero">
+        <span class="eyebrow">VIEWER MODE</span>
+        <h1>Watch <span class="gradient-text">Together.</span></h1>
+        <p>
+            Masukkan token broadcaster untuk bergabung dan
+            menonton siaran video secara real-time.
+        </p>
+    </section>
+
+    <div class="stack">
+        <section class="glass-card">
+            <div class="card-heading">
+                <div class="icon-box">🔑</div>
+                <div>
+                    <h2>Masukkan Token Room</h2>
+                    <p>Gunakan token yang diberikan broadcaster.</p>
+                </div>
+            </div>
+
+            <form id="joinForm" class="row-layout">
+                <input
+                    class="input"
+                    id="nameInput"
+                    type="text"
+                    placeholder="Nama kamu (mis. Ana)"
+                    autocomplete="nickname"
+                    maxlength="24"
+                    required
+                    style="flex:.6"
+                >
+                <input
+                    class="input"
+                    id="tokenInput"
+                    type="text"
+                    placeholder="Masukkan token room di sini..."
+                    autocomplete="off"
+                    required
+                    style="flex:1"
+                >
+                <button class="primary-btn" id="joinBtn" type="submit">
+                    → Join Room
+                </button>
+            </form>
+
+            <p id="joinStatus" class="status" style="margin:15px 0 0">
+                Masukkan token untuk memulai.
+            </p>
+        </section>
+
+        <section class="glass-card">
+            <div class="card-heading">
+                <div class="icon-box">🖥️</div>
+                <div>
+                    <h2>Live Room</h2>
+                    <p>Siaran broadcaster dan kamera kamu tampil berdampingan.</p>
+                </div>
+            </div>
+
+            <div class="meet-grid" id="meetGrid">
+                <div class="meet-tile">
+                    <span class="video-badge">◉ BROADCASTER</span>
+                    <video id="remoteVideo" autoplay playsinline controls></video>
+                </div>
+
+                <div class="meet-tile">
+                    <span class="video-badge" id="selfBadge">👤 KAMERA KAMU</span>
+                    <video id="viewerLocalVideo" autoplay playsinline muted></video>
+                </div>
+            </div>
+
+            <div class="viewer-controls">
+                <button class="primary-btn" id="viewerCameraBtn" type="button">
+                    📷 Aktifkan Kamera
+                </button>
+
+                <button class="primary-btn" id="viewerMicBtn" type="button">
+                    🎙️ Aktifkan Mikrofon
+                </button>
+
+                <button class="primary-btn" id="viewerStopBtn" type="button">
+                    ⏹ Matikan Kamera & Mikrofon
+                </button>
+            </div>
+
+            <span class="status" id="viewerMediaStatus">
+                Kamera dan mikrofon belum aktif.
+            </span>
+
+            <div class="subtitle-panel" id="subtitlePanel">
+                <div class="subtitle-header">
+                    <span class="subtitle-indicator"></span>
+                    <span>LIVE CAPTIONS</span>
+                    <span class="subtitle-language">INDONESIA</span>
+                </div>
+
+                <p id="subtitleText" aria-live="polite">
+                    Subtitle akan muncul saat broadcaster berbicara...
+                </p>
+            </div>
+
+            <div style="margin-top:16px">
+                <span class="status" id="connectionStatus">
+                    Menunggu koneksi...
+                </span>
+            </div>
+        </section>
+
+        <section class="info-card" id="informasi">
+            <div class="icon-box">ⓘ</div>
+            <div>
+                <strong>Informasi Viewer</strong><br>
+                Pastikan token benar dan broadcaster masih aktif.
+                Video akan diterima melalui koneksi WebRTC.
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <span>────</span> WebRTC Lab • Multimedia Technology <span>────</span>
+    </footer>
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module">
+    import { startView, initViewerMedia } from './main.js';
+
+    initViewerMedia();
+
+    // Isi otomatis nama terakhir yang dipakai
+    try {
+        const saved = localStorage.getItem('viewerName');
+        if (saved) document.getElementById('nameInput').value = saved;
+    } catch (e) {}
+
+    const form = document.getElementById('joinForm');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const token = document.getElementById('tokenInput').value.trim();
+        const name = document.getElementById('nameInput').value
+            .replace(/\s+/g, ' ').trim().slice(0, 24);
+        if (!token || !name) return;
+
+        try { localStorage.setItem('viewerName', name); } catch (e) {}
+        document.getElementById('selfBadge').textContent = '👤 ' + name + ' (Kamu)';
+
+        const joinStatus = document.getElementById('joinStatus');
+        joinStatus.textContent = 'Menghubungkan ke broadcaster...';
+        joinStatus.className = 'status';
+
+        try {
+            await startView(token, name);
+        } catch (error) {
+            console.error(error);
+            joinStatus.textContent = 'Gagal memulai koneksi. Periksa Console.';
+            joinStatus.className = 'status error';
+        }
+    });
+</script>
+</body>
+</html>

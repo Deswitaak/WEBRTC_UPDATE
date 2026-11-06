@@ -1,0 +1,8 @@
+
+node_modules/
+ssl/key.pem
+ssl/cert.pem
+.env
+.env.*
+!.env.example
+npm-debug.log*
